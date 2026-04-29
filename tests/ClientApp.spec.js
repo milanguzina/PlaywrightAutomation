@@ -2,7 +2,7 @@ const {test, expect} = require('@playwright/test');
 
 
 
-test('Browser Context - Validating Error Login', async ({page})=>
+test.only('Browser Context - Validating Error Login', async ({page})=>
 {
     const products = page.locator(".card-body");
     const productName = "ZARA COAT 3";
@@ -17,7 +17,9 @@ test('Browser Context - Validating Error Login', async ({page})=>
     await page.waitForLoadState('networkidle'); // sometimes it is flaky and returns an empty arrays
 
     //alternate way if the networkIdle is flaky
-    await page.locator(".card-body b").first().waitFor();
+   await page.locator("div li").first().waitFor({ state: 'visible' });
+
+    
     const titles = await page.locator(".card-body b").allTextContents();
     console.log(titles);
 
