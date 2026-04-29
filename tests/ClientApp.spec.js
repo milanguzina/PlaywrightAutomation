@@ -2,7 +2,7 @@ const {test, expect} = require('@playwright/test');
 
 
 
-test.only('Browser Context - Validating Error Login', async ({page})=>
+test('Browser Context - Validating Error Login', async ({page})=>
 {
     const products = page.locator(".card-body");
     const productName = "ZARA COAT 3";
