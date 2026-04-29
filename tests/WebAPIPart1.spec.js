@@ -1,24 +1,47 @@
-const {test, expect} = require('@playwright/test');
+const {test, expect, request} = require('@playwright/test');
+const loginPayload = {userEmail:"milanguzina@yahoo.com",userPassword:"CH9GJeG#n7kqScR"};
+let token;
 
-
-test('Browser Context - Validating Error Login', async ({page})=>
+test.beforeAll( async()=>
 {
-    const products = page.locator(".card-body");
-    const productName = "ZARA COAT 3";
-    const email = "milanguzina@yahoo.com";
+    const apiContext = await request.newContext();
+    const loginResponse = await apiContext.post("https://rahulshettyacademy.com/api/ecom/auth/login", 
+        {
+            data: loginPayload
+        });
+    
+    expect (loginResponse.ok).toBeTruthy();
+    const loginResponseJson = await loginResponse.json();
+    token = loginResponseJson.token;
+    console.log(token);
 
-    await page.goto("https://rahulshettyacademy.com/client/");
-    await page.locator("#userEmail").fill("milanguzina@yahoo.com");
-    await page.locator("#userPassword").fill("CH9GJeG#n7kqScR");
-    await page.locator("[value='Login']").click();
+
+});
+
+
+
+test.only('Place Order', async ({page})=>
+{
+    await page.addInitScript(value => {
+        window.localStorage.setItem('token', value);
+    }, token);
+  
+
+    // await page.goto("https://rahulshettyacademy.com/client/");
+    // await page.locator("#userEmail").fill("milanguzina@yahoo.com");
+    // await page.locator("#userPassword").fill("CH9GJeG#n7kqScR");
+    // await page.locator("[value='Login']").click();
 
     //waits until network comes to idle state - when all the calls are successfully made
-    await page.waitForLoadState('networkidle'); // sometimes it is flaky and returns an empty arrays
+    // await page.waitForLoadState('networkidle'); // sometimes it is flaky and returns an empty arrays
 
-    //alternate way if the networkIdle is flaky
-   await page.locator("div li").first().waitFor({ state: 'visible' });
+    // //alternate way if the networkIdle is flaky
+    // await page.locator("div li").first().waitFor({ state: 'visible' });
 
-    
+    const productName = "ZARA COAT 3";
+    const email = "milanguzina@yahoo.com";
+    await page.goto("https://rahulshettyacademy.com/client/");
+    const products = page.locator(".card-body");
     const titles = await page.locator(".card-body b").allTextContents();
     console.log(titles);
 
