@@ -1,98 +1,43 @@
 const {test, expect, request} = require('@playwright/test');
+const {APiUtils} = require('./utils/APiUtils');
 const loginPayload = {userEmail:"milanguzina@yahoo.com",userPassword:"CH9GJeG#n7kqScR"};
+const orderPayload = {orders: [{country: "India", productOrderedId: "6960eac0c941646b7a8b3e68"}]};
+let apiContext;
 let token;
+let response;
 
 test.beforeAll( async()=>
 {
-    const apiContext = await request.newContext();
-    const loginResponse = await apiContext.post("https://rahulshettyacademy.com/api/ecom/auth/login", 
-        {
-            data: loginPayload
-        });
-    
-    expect (loginResponse.ok).toBeTruthy();
-    const loginResponseJson = await loginResponse.json();
-    token = loginResponseJson.token;
-    console.log(token);
+    apiContext = await request.newContext();
+    const apiUtils = new APiUtils(apiContext,loginPayload)
+    response = await apiUtils.createOrder(orderPayload);
+}); 
 
-
-});
-
-
-
-test.only('Place Order', async ({page})=>
-{
-    await page.addInitScript(value => {
-        window.localStorage.setItem('token', value);
-    }, token);
   
 
-    // await page.goto("https://rahulshettyacademy.com/client/");
-    // await page.locator("#userEmail").fill("milanguzina@yahoo.com");
-    // await page.locator("#userPassword").fill("CH9GJeG#n7kqScR");
-    // await page.locator("[value='Login']").click();
-
-    //waits until network comes to idle state - when all the calls are successfully made
-    // await page.waitForLoadState('networkidle'); // sometimes it is flaky and returns an empty arrays
-
-    // //alternate way if the networkIdle is flaky
-    // await page.locator("div li").first().waitFor({ state: 'visible' });
-
-    const productName = "ZARA COAT 3";
-    const email = "milanguzina@yahoo.com";
-    await page.goto("https://rahulshettyacademy.com/client/");
-    const products = page.locator(".card-body");
-    const titles = await page.locator(".card-body b").allTextContents();
-    console.log(titles);
-
-    const productsNumber = await products.count();
-    for (let i=0; i<productsNumber; i++){
-       if (await products.nth(i).locator("b").textContent() === productName)
-       {
-        //add to cart
-        await products.nth(i).locator("text=Add To Cart").click();
-        break;
-       }
-    }
-    
-    await page.locator("[routerlink*='cart']").click();
-    await page.locator("div li").first().waitFor();
-    const bool = await page.locator("h3:has-text('ZARA COAT 3')").isVisible();
-    expect(bool).toBeTruthy();
-    await page.locator("text=Checkout").click();
-    await page.locator("[placeholder*='Country']").pressSequentially("ind",{delay:200});
-    const dropdown = page.locator(".ta-results");
-    await dropdown.waitFor();
-    const optionsCount = await dropdown.locator("button").count();
-    
-    for(let i=0; i<optionsCount; ++i){
-    const text = await dropdown.locator("button").nth(i).textContent();
-        if(text === " India"){
-            await dropdown.locator("button").nth(i).click();
-            break;
-        }
-    }
-   
-    await expect(page.locator(".user__name [type='text']").first()).toHaveText(email);
-    await page.locator(".action__submit").click();
-    await expect(page.locator(".hero-primary")).toHaveText(" Thankyou for the order. ");
-    const orderID = await page.locator(".em-spacer-1 .ng-star-inserted").textContent();
-    console.log(orderID);
-
-    //find the orderID in the order page list
-
-    await page.locator('label:has-text("Orders History Page")').click();
-    await page.locator("tbody").waitFor();
-
-    const orders = await page.locator("tbody tr");
-    const ordersCount = await orders.locator("th").count();
-    console.log(ordersCount);
-     for(let i=0; i<ordersCount; ++i){
-     const orderNumber = await orders.nth(i).locator("th").textContent();
-        if(orderID.includes(orderNumber)){
-            console.log(orderNumber);
-            break;
-        }
-    }
-
+   test('@API Place the order', async ({page})=>
+{ 
+    await page.addInitScript(value => {
+ 
+        window.localStorage.setItem('token',value);
+    }, response.token );
+// await page.goto("https://rahulshettyacademy.com/client");
+//  await page.locator("button[routerlink*='myorders']").click();
+//  await page.locator("tbody").waitFor();
+// const rows = await page.locator("tbody tr");
+ 
+ 
+// for(let i =0; i<await rows.count(); ++i)
+// {
+//    const rowOrderId =await rows.nth(i).locator("th").textContent();
+//    if (response.orderId.includes(rowOrderId))
+//    {
+//        await rows.nth(i).locator("button").first().click();
+//        break;
+//    }
+// }
+// const orderIdDetails =await page.locator(".col-text").textContent();
+// //await page.pause();
+// expect(response.orderId.includes(orderIdDetails)).toBeTruthy();
+ 
 });

@@ -28,4 +28,10 @@ const config = ({
 
 });
 
-module.exports = config;
+module.exports = { 
+  config,
+  reporter: [
+    ['line'], 
+    ['allure-playwright', { outputFolder: 'allure-results' }]
+  ],
+};
